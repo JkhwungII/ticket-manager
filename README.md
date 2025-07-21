@@ -1,6 +1,6 @@
-# Ticket Manager
+# Ticket Manager backend
 
-A Spring Boot 3 RESTful backend for managing support tickets, users and devices. It ships with JWT-based authentication, role-based access control and a MySQL data store.
+A Spring Boot 3 RESTful backend for Ticket manager. It ships with JWT-based authentication, role-based access control and a MySQL data store.
 
 ## Features
 
@@ -28,9 +28,48 @@ A Spring Boot 3 RESTful backend for managing support tickets, users and devices.
 
 ```sql
 CREATE DATABASE ticket_manager CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE device (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(255),
+    CPU VARCHAR(255),
+    mother_board VARCHAR(255),
+    drive VARCHAR(255),
+    additional_info TEXT
+);
+
+CREATE TABLE user_accounts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255),
+    role VARCHAR(255),
+    password VARCHAR(255),
+    phone_number VARCHAR(30)
+);
+
+CREATE TABLE ticket_detail (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ticket_id INT,
+    staff_id INT,
+    process_detail TEXT,
+    created_timed DATETIME,
+    FOREIGN KEY (staff_id) REFERENCES user_accounts(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    FOREIGN KEY (ticket_id) REFERENCES ticket(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+);
+
+CREATE TABLE ticket (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    issuer_id INT,
+    issue TEXT,
+    device_id INT,
+    created_time DATETIME,
+    state VARCHAR(20),
+    FOREIGN KEY (issuer_id) REFERENCES user_accounts(id) ON UPDATE RESTRICT ON DELETE CASCADE,
+    FOREIGN KEY (device_id) REFERENCES device(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+);
+
 ```
 
-Edit `src/main/resources/application.properties` if you need to change the DB credentials or JWT settings.
+Set enviormental variable MYSQL_URL,MYSQL_USER,MYSQL_SECRET,JWT_KEY to the respective value before starting
 
 ## Getting Started
 
@@ -49,16 +88,17 @@ The API root will now be available at `http://localhost:8080/api`.
 ## Environment Configuration
 
 ```
-spring.datasource.url=jdbc:mysql://localhost:3306/ticket_manager
-spring.datasource.username=<your-mysql-user>
-spring.datasource.password=<your-mysql-password>
+spring.application.name=ticket_manager
+spring.datasource.url=${MYSQL_URL}
+spring.datasource.username=${MYSQL_USER}
+spring.datasource.password=${MYSQL_SECRET}
 
 # show SQL statements and update schema automatically (dev only)
 spring.jpa.show-sql=true
 spring.jpa.generate-ddl=true
 
 # JWT
-jwt.secret-key=<a-long-random-string>
+jwt.secret-key=${JWT_KEY}
 jwt.valid-seconds=7200
 ```
 
@@ -96,20 +136,4 @@ jwt.valid-seconds=7200
 | PATCH | `/admin/device` | Admin | Update device |
 | DELETE | `/admin/device/{Device_ID}` | Admin | Delete device |
 
-## Running Tests
 
-A test skeleton exists under `src/test`, but no unit tests have been implemented yet. Feel free to contribute!
-
-## Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-Distributed under the MIT License. See `LICENSE` for more information.
