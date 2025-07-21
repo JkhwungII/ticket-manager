@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,16 +28,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        // 取得 header
-
-        var authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (authHeader == null) {
+        String jwt = null;
+        if (request.getCookies() != null) {
+            for (var cookie : request.getCookies()) {
+                if ("auth".equals(cookie.getName())) {
+                    jwt = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        if (jwt == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
-
-        // 解析 JWT
-        var jwt = authHeader.substring(BEARER_PREFIX.length());
         Claims claims;
         try {
             claims = jwtService.parseToken(jwt);
@@ -50,6 +54,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         userDetails.setUsername(claims.get("username", String.class));
 
         List<String> memberAuthorities= (List<String>) claims.get("authorities");
+
+        userDetails.setId(claims.get("id", Integer.class));
 
         userDetails.setMemberAuthorities(memberAuthorities);
 

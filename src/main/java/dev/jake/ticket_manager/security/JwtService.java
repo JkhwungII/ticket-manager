@@ -31,6 +31,7 @@ public class JwtService {
         Claims claims = Jwts.claims()
                 .issuedAt(new Date())
                 .expiration(new Date(expirationMillis))
+                .add("id",   user.getID())
                 .add("username", user.getUsername())
                 .add("authorities", user.getUserAuthorities())
                 .build();

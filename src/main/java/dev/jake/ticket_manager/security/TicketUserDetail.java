@@ -64,7 +64,7 @@ public class TicketUserDetail implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
+    public void setId(int id) { this.id = id; }
 
     public void setUsername(String username) {
         this.username = username;

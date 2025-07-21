@@ -8,6 +8,7 @@ import dev.jake.ticket_manager.users.DTO.TicketUser;
 import dev.jake.ticket_manager.users.DTO.TicketUserInfo;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import jakarta.servlet.http.Cookie;
 
 @RestController
 @CrossOrigin("http://localhost:9000/")
@@ -35,7 +37,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody LoginRequest request, HttpServletResponse response){
+    public void login(@RequestBody LoginRequest request, HttpServletResponse response){
         Authentication token = new UsernamePasswordAuthenticationToken(
                 request.getUsername(),
                 request.getPassword()
@@ -44,7 +46,36 @@ public class UserController {
         TicketUserDetail user = (TicketUserDetail) auth.getPrincipal();
         String jwt_token = jwtService.createLoginAccessToken(user);
 
-        return LoginResponse.of(jwt_token,user);
+        // Set JWT as an HTTP-only cookie using ResponseCookie builder for SameSite support
+        ResponseCookie cookie = ResponseCookie.from("auth", jwt_token)
+            .httpOnly(true)
+            .secure(true)        // add this back
+            .sameSite("None")    // keep this
+            .path("/")
+            .maxAge(60 * 60)
+            .build();
+        response.addHeader("Set-Cookie", cookie.toString());
+
+    }
+
+    @GetMapping("/me")
+    public LoginResponse getUserInfo(Authentication authentication) {
+        TicketUserDetail userDetails = (TicketUserDetail) authentication.getPrincipal();
+        return LoginResponse.of(userDetails);
+    }
+
+    @PostMapping("/logout")
+    public void logout(HttpServletResponse response) {
+        // To clear the cookie, we must build a cookie with the same attributes (path, domain, secure, sameSite)
+        // and set maxAge to 0.
+        ResponseCookie cookie = ResponseCookie.from("auth", "")
+            .httpOnly(true)
+            .secure(true)
+            .sameSite("None")
+            .path("/")
+            .maxAge(0)
+            .build();
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
     @PostMapping("/admin")
