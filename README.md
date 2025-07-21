@@ -111,8 +111,8 @@ jwt.valid-seconds=7200
 | POST | `/login` | Public | Log in and receive JWT |
 | POST | `/admin` | Admin | Create a new user |
 | GET | `/staff/userinfo/{user_id}` | Staff | Retrieve user info |
-| GET | `/me` | Authenticated | Retrieve user name and authorities |
-| GET | `/logout` | Authenticated | clear jwt token stored in http-only cookie |
+| GET | `/me` | Authenticated | Retrieve user's name and role |
+| GET | `/logout` | Authenticated | clear jwt token storing http-only cookie |
 
 ### Tickets  `/api/tickets`
 
