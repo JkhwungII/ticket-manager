@@ -1,6 +1,6 @@
 # Ticket Manager backend
 
-A Spring Boot 3 RESTful backend for Ticket manager. It ships with JWT-based authentication, role-based access control and a MySQL data store.
+A Spring Boot RESTful backend for Ticket manager. It ships with JWT-based authentication, role-based access control and a MySQL data store. Do note that some api are reserved for functions further down the roadmap and are not used in the current frontend.
 
 ## Features
 
